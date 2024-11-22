@@ -5,5 +5,6 @@ export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {
   id: number
 }
 
-export interface UpdateDiscountWithCategory
-  extends Partial<Omit<CreateCategoryDto['discountRules'], 'category'>> {}
+export type UpdateDiscountWithCategory = Partial<
+  Omit<CreateCategoryDto['discountRules'], 'category'>
+>

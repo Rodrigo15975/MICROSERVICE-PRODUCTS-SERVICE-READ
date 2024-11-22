@@ -50,7 +50,7 @@ export class CategoryService {
     return await this.schemaModel
       .find()
       .lean()
-      .select('-_id -__v')
+      .select('-_id -__v -updatedAt')
       .sort({ id: -1 })
   }
 
@@ -77,6 +77,8 @@ export class CategoryService {
    */
   async updateDiscountWithCategory(data: UpdateDiscountWithCategory) {
     const { id } = data
+    console.log({ data })
+
     try {
       await this.schemaModel.updateOne(
         // busco el doc en el discountRules que conincida con el id
@@ -86,7 +88,7 @@ export class CategoryService {
         {
           // actualizo el doc con los datos
           $set: {
-            discountRules: data,
+            'discountRules.$': data,
           },
         },
       )

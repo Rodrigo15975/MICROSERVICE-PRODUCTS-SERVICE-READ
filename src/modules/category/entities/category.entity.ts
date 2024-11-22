@@ -25,16 +25,16 @@ export class Category {
   @Prop({
     type: Array<{
       id: {
-        type: Number
+        type: number
         unique: true
         required: true
         index: true // Aplica el índice aquí
       }
-      categoryId: { type: String; required: true }
-      discount: { type: Number; required: true }
-      start_date: { type: String; required: true }
-      end_date: { type: String; required: true }
-      is_active: { type: Boolean; required: true }
+      categoryId: { type: string; required: true }
+      discount: { type: number; required: true }
+      start_date: { type: string; required: true }
+      end_date: { type: string; required: true }
+      is_active: { type: boolean; required: true }
     }>,
     required: false,
   })

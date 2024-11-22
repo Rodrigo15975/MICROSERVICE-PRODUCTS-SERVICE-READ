@@ -1,12 +1,24 @@
 import { Module } from '@nestjs/common'
-import { MongooseModule } from '@nestjs/mongoose'
 import { CategoryController } from './category.controller'
 import { CategoryService } from './category.service'
 import { Category, CategorySchema } from './entities/category.entity'
+import { MongooseModule } from '@nestjs/mongoose'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/category'),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: false,
+      envFilePath: '.env',
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.getOrThrow<string>('MONGODB_URI'),
+      }),
+    }),
     MongooseModule.forFeature([
       {
         name: Category.name,
