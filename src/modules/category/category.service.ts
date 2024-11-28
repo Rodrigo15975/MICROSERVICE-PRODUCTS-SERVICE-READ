@@ -47,11 +47,24 @@ export class CategoryService {
    *
    */
   async findAll() {
-    return await this.schemaModel
-      .find()
-      .lean()
-      .select('-_id -__v -updatedAt')
-      .sort({ id: -1 })
+    return await this.schemaModel.aggregate([
+      {
+        $project: {
+          _id: 0,
+          id: 1,
+          category: 1,
+          createdAt: 1,
+          discountRules: {
+            $filter: {
+              input: '$discountRules',
+              as: 'rule',
+              cond: { $eq: ['$$rule.is_active', true] },
+            },
+          },
+        },
+      },
+      { $sort: { id: -1 } },
+    ])
   }
 
   async update(id: number, data: UpdateCategoryDto) {
@@ -77,8 +90,6 @@ export class CategoryService {
    */
   async updateDiscountWithCategory(data: UpdateDiscountWithCategory) {
     const { id } = data
-    console.log({ data })
-
     try {
       await this.schemaModel.updateOne(
         // busco el doc en el discountRules que conincida con el id
