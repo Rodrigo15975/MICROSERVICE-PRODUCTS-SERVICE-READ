@@ -3,7 +3,10 @@ import { MessagePattern, Payload } from '@nestjs/microservices'
 import { ProductsService } from './products.service'
 import { CreateProductDto } from './dto/create-product.dto'
 import { UpdateProductDto } from './dto/update-product.dto'
-import { PRODUCTS_CREATE_READ } from './common/patternRead'
+import {
+  PRODUCTS_CREATE_READ,
+  PRODUCTS_GET_ALL_READ,
+} from './common/patternRead'
 
 @Controller()
 export class ProductsController {
@@ -14,7 +17,7 @@ export class ProductsController {
     return this.productsService.create(createProductDto)
   }
 
-  @MessagePattern('findAllProducts')
+  @MessagePattern(PRODUCTS_GET_ALL_READ)
   findAll() {
     return this.productsService.findAll()
   }
