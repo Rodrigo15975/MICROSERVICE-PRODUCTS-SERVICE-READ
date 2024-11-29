@@ -1,0 +1,1 @@
+export const KEY_CATEGORIES: string = `CATEGORIES:DB:READ:KEY:FIND:ALL `

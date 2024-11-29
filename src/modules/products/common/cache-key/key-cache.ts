@@ -1,0 +1,1 @@
+export const KEY_PRODUCTS_FIND_ALL: string = `PRODUCTS:DB:READ:KEY:FIND:ALL `
