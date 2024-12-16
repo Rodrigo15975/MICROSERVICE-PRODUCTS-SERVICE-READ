@@ -1,0 +1,1 @@
+export const CATEGORY_CACHE_NAME: string = 'CATEGORY:SERVICE:READ'

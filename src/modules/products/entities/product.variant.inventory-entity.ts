@@ -14,6 +14,13 @@ export class ProductVariantDto {
     type: String,
   })
   url: string
+
+  @Prop({
+    required: true,
+    index: true,
+    type: String,
+  })
+  key_url: string
 }
 
 export class ProductInventoryDto {

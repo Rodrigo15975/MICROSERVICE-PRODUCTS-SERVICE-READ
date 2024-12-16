@@ -3,6 +3,12 @@ class ProductVariantDto {
   url: string
 }
 
+export class CreateOneVariant extends ProductVariantDto {
+  id: number
+  productsId: number
+  key_url: string
+}
+
 class ProductInventoryDto {
   minStock: number
   stock: boolean

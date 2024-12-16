@@ -4,9 +4,11 @@ import { CategoryService } from './category.service'
 import { Category, CategorySchema } from './entities/category.entity'
 import { MongooseModule } from '@nestjs/mongoose'
 import { ConfigModule, ConfigService } from '@nestjs/config'
+import { CacheModule } from '../cache/cache.module'
 
 @Module({
   imports: [
+    CacheModule,
     ConfigModule.forRoot({
       isGlobal: true,
       cache: false,

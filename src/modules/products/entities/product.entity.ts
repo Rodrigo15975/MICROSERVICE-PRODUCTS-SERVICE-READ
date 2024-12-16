@@ -88,6 +88,7 @@ export class Product extends Document {
   @Prop({ type: Object, required: true })
   category: {
     id: number
+
     category: string
   }
 

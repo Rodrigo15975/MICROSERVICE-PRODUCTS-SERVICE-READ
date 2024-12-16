@@ -1,11 +1,13 @@
 import { Controller } from '@nestjs/common'
 import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices'
 import { ProductsService } from './products.service'
-import { CreateProductDto } from './dto/create-product.dto'
+import { CreateOneVariant, CreateProductDto } from './dto/create-product.dto'
 import {
+  PRODUCTS_CREATE_ONE_VARIANT_READ,
   PRODUCTS_CREATE_READ,
   PRODUCTS_GET_ALL_READ,
   PRODUCTS_REMOVE_READ,
+  PRODUCTS_REMOVE_URL_READ,
 } from './common/patternRead'
 
 @Controller()
@@ -15,6 +17,10 @@ export class ProductsController {
   @MessagePattern(PRODUCTS_CREATE_READ)
   create(@Payload() createProductDto: CreateProductDto) {
     return this.productsService.create(createProductDto)
+  }
+  @MessagePattern(PRODUCTS_CREATE_ONE_VARIANT_READ)
+  createOneVariant(@Payload() createOneVariant: CreateOneVariant) {
+    return this.productsService.createOneVariant(createOneVariant)
   }
 
   @MessagePattern(PRODUCTS_GET_ALL_READ)
@@ -30,5 +36,13 @@ export class ProductsController {
   @EventPattern(PRODUCTS_REMOVE_READ)
   remove(@Payload() id: number) {
     return this.productsService.remove(id)
+  }
+
+  /**
+   * @DeteleUrl
+   */
+  @MessagePattern(PRODUCTS_REMOVE_URL_READ)
+  removeUrl(@Payload() key_url: string) {
+    return this.productsService.removeUrl(key_url)
   }
 }
