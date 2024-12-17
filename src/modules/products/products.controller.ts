@@ -7,6 +7,7 @@ import {
   PRODUCTS_CREATE_READ,
   PRODUCTS_GET_ALL_READ,
   PRODUCTS_REMOVE_READ,
+  PRODUCTS_REMOVE_SIZE_READ,
   PRODUCTS_REMOVE_URL_READ,
 } from './common/patternRead'
 
@@ -14,11 +15,11 @@ import {
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @MessagePattern(PRODUCTS_CREATE_READ)
+  @EventPattern(PRODUCTS_CREATE_READ)
   create(@Payload() createProductDto: CreateProductDto) {
-    return this.productsService.create(createProductDto)
+    return this.productsService.createOrUpdate(createProductDto)
   }
-  @MessagePattern(PRODUCTS_CREATE_ONE_VARIANT_READ)
+  @EventPattern(PRODUCTS_CREATE_ONE_VARIANT_READ)
   createOneVariant(@Payload() createOneVariant: CreateOneVariant) {
     return this.productsService.createOneVariant(createOneVariant)
   }
@@ -41,8 +42,15 @@ export class ProductsController {
   /**
    * @DeteleUrl
    */
-  @MessagePattern(PRODUCTS_REMOVE_URL_READ)
+  @EventPattern(PRODUCTS_REMOVE_URL_READ)
   removeUrl(@Payload() key_url: string) {
     return this.productsService.removeUrl(key_url)
+  }
+  /**
+   * @DeteleUrl
+   */
+  @EventPattern(PRODUCTS_REMOVE_SIZE_READ)
+  removeOneSize(@Payload() data: CreateProductDto) {
+    return this.productsService.createOrUpdate(data)
   }
 }

@@ -22,7 +22,7 @@ export class ProductsService {
    * @param {Product} data
    */
 
-  async create(data: CreateProductDto) {
+  async createOrUpdate(data: CreateProductDto) {
     const { id } = data
     try {
       await this.productModel.findOneAndUpdate(
