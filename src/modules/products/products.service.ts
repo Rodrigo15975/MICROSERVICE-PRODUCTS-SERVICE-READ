@@ -24,6 +24,7 @@ export class ProductsService {
 
   async createOrUpdate(data: CreateProductDto) {
     const { id } = data
+
     try {
       await this.productModel.findOneAndUpdate(
         {
