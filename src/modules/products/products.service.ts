@@ -6,6 +6,7 @@ import { HandledRpcException } from '../common/handler-errors/handle-errorst'
 import { KEY_PRODUCTS_FIND_ALL } from './common/cache-key/key-cache'
 import { CreateOneVariant, CreateProductDto } from './dto/create-product.dto'
 import { Product } from './entities/product.entity'
+import { CouponService } from '../coupon/coupon.service'
 
 @Injectable()
 export class ProductsService {
@@ -13,6 +14,7 @@ export class ProductsService {
   constructor(
     @InjectModel(Product.name) private readonly productModel: Model<Product>,
     private readonly cacheService: CacheService,
+    private readonly couponService: CouponService,
   ) {}
   /**
    * Notification the product has been updated or created
@@ -103,27 +105,42 @@ export class ProductsService {
       this.logger.log('Error get all PRODUCT IN DB-READ', error)
     }
   }
+  async findOneAndDeleteCategorie(categoryId: number) {
+    try {
+      await this.productModel.findOneAndDelete({
+        categoryId,
+      })
 
+      this.logger.log(
+        'Product deleted for CATEGORIE ID successfully in DB-READ',
+        categoryId,
+      )
+      await this.cacheService.delete(KEY_PRODUCTS_FIND_ALL)
+    } catch (error) {
+      this.logger.log(
+        'Error get product with categorie by ID in DB-READ',
+        error,
+      )
+    }
+  }
+  /**
+   * @GET_IN_FRONT_CLIENT
+   */
+  // esto ira cuando toca la parte del client E-COMMERCE
   async findOne(id: number) {
     try {
-      /**
-       * @GET_IN_FRONT_CLIENT
-       */
-      // esto ira cuando toca la parte del client E-COMMERCE
-      console.log(id)
-
-      // const product = await this.productModel
-      //   .findOne({
-      //     id,
-      //   })
-      //   .select('-_id -__v')
-      //   .exec()
-      // if (!product)
-      //   throw HandledRpcException.rpcException(
-      //     'Product not found',
-      //     HttpStatus.NOT_FOUND,
-      //   )
-      // return product
+      const product = await this.productModel
+        .findOne({
+          id,
+        })
+        .select('-_id -__v')
+        .exec()
+      if (!product)
+        throw HandledRpcException.rpcException(
+          'Product not found',
+          HttpStatus.NOT_FOUND,
+        )
+      return product
     } catch (error) {
       this.logger.log('Error get product by ID in DB-READ', error)
       throw HandledRpcException.rpcException(error.message, error.status)
@@ -132,8 +149,6 @@ export class ProductsService {
 
   async removeUrl(key_url: string) {
     try {
-      console.log({ key_url })
-
       await this.productModel.findOneAndUpdate(
         { 'productVariant.key_url': key_url }, // Filtro: busca un documento que tenga un productVariant con el key_url especificado
         {
@@ -152,6 +167,8 @@ export class ProductsService {
 
   async remove(id: number) {
     try {
+      console.log(this.couponService)
+
       await this.productModel.findOneAndDelete(
         {
           id,

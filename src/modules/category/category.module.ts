@@ -5,9 +5,15 @@ import { Category, CategorySchema } from './entities/category.entity'
 import { MongooseModule } from '@nestjs/mongoose'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { CacheModule } from '../cache/cache.module'
+import { Product, SchemaProduct } from '../products/entities/product.entity'
+import { ProductsService } from '../products/products.service'
+import { CouponService } from '../coupon/coupon.service'
+import { CouponModule } from '../coupon/coupon.module'
+import { Coupon, SchemaCoupon } from '../coupon/entities/coupon.entity'
 
 @Module({
   imports: [
+    CouponModule,
     CacheModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -26,9 +32,17 @@ import { CacheModule } from '../cache/cache.module'
         name: Category.name,
         schema: CategorySchema,
       },
+      {
+        name: Product.name,
+        schema: SchemaProduct,
+      },
+      {
+        name: Coupon.name,
+        schema: SchemaCoupon,
+      },
     ]),
   ],
   controllers: [CategoryController],
-  providers: [CategoryService],
+  providers: [CategoryService, ProductsService, CouponService],
 })
 export class CategoryModule {}

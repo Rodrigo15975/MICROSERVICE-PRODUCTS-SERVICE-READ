@@ -18,8 +18,6 @@ export class CouponService {
   async createOrUpdate(data: CreateCouponDto) {
     const { id } = data
     try {
-      console.log({ data })
-
       await this.couponModel.findOneAndUpdate(
         {
           id,

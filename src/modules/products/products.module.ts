@@ -1,13 +1,18 @@
 import { Module } from '@nestjs/common'
-import { ProductsService } from './products.service'
-import { ProductsController } from './products.controller'
-import { MongooseModule } from '@nestjs/mongoose'
 import { ConfigModule, ConfigService } from '@nestjs/config'
-import { Product, SchemaProduct } from './entities/product.entity'
+import { MongooseModule } from '@nestjs/mongoose'
 import { CacheModule } from '../cache/cache.module'
+import { Category, CategorySchema } from '../category/entities/category.entity'
+import { CouponModule } from '../coupon/coupon.module'
+import { CouponService } from '../coupon/coupon.service'
+import { Coupon, SchemaCoupon } from '../coupon/entities/coupon.entity'
+import { Product, SchemaProduct } from './entities/product.entity'
+import { ProductsController } from './products.controller'
+import { ProductsService } from './products.service'
 
 @Module({
   imports: [
+    CouponModule,
     CacheModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -26,9 +31,17 @@ import { CacheModule } from '../cache/cache.module'
         name: Product.name,
         schema: SchemaProduct,
       },
+      {
+        name: Coupon.name,
+        schema: SchemaCoupon,
+      },
+      {
+        name: Category.name,
+        schema: CategorySchema,
+      },
     ]),
   ],
   controllers: [ProductsController],
-  providers: [ProductsService],
+  providers: [ProductsService, CouponService],
 })
 export class ProductsModule {}

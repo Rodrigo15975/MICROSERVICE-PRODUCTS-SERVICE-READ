@@ -9,6 +9,7 @@ import {
 import { Category } from './entities/category.entity'
 import { CacheService } from '../cache/cache.service'
 import { CATEGORY_CACHE_NAME } from './common/category-cache-name'
+import { ProductsService } from '../products/products.service'
 
 @Injectable()
 export class CategoryService {
@@ -16,12 +17,14 @@ export class CategoryService {
   constructor(
     @InjectModel(Category.name) private readonly schemaModel: Model<Category>,
     private readonly cacheService: CacheService,
+    private readonly productService: ProductsService,
   ) {}
 
   async create(data: CreateCategoryDto) {
+    const { id } = data
     try {
       const result = await this.schemaModel.findOneAndUpdate(
-        { id: data.id }, // Busca por ID o cualquier otro criterio único
+        { id }, // Busca por ID o cualquier otro criterio único
         { $set: data }, // Los campos que deseas actualizar o establecer
         { upsert: true, new: true }, // `upsert: true` para crear si no existe, `new: true` para devolver el documento actualizado
       )
@@ -43,7 +46,6 @@ export class CategoryService {
       this.logger.fatal('Failed CREATED MANY Category in DB-READ: ', error)
     }
   }
-
   /**
    * @ALL GET CATEGORY
    * @ORDER DECS
@@ -130,6 +132,7 @@ export class CategoryService {
       await this.schemaModel.findOneAndDelete({
         id,
       })
+      await this.productService.findOneAndDeleteCategorie(id)
       this.logger.log(
         `deleted successfully CATEGORY in DB-READ with id: ${JSON.stringify(id)}`,
       )
