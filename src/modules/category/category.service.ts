@@ -132,7 +132,7 @@ export class CategoryService {
       await this.schemaModel.findOneAndDelete({
         id,
       })
-      await this.productService.findOneAndDeleteCategorie(id)
+      await this.productService.findOneAndDeleteCategorieOfProduct(id)
       this.logger.log(
         `deleted successfully CATEGORY in DB-READ with id: ${JSON.stringify(id)}`,
       )

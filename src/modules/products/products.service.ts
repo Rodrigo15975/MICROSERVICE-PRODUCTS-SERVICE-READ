@@ -105,24 +105,6 @@ export class ProductsService {
       this.logger.log('Error get all PRODUCT IN DB-READ', error)
     }
   }
-  async findOneAndDeleteCategorie(categoryId: number) {
-    try {
-      await this.productModel.findOneAndDelete({
-        categoryId,
-      })
-
-      this.logger.log(
-        'Product deleted for CATEGORIE ID successfully in DB-READ',
-        categoryId,
-      )
-      await this.cacheService.delete(KEY_PRODUCTS_FIND_ALL)
-    } catch (error) {
-      this.logger.log(
-        'Error get product with categorie by ID in DB-READ',
-        error,
-      )
-    }
-  }
   /**
    * @GET_IN_FRONT_CLIENT
    */
@@ -182,6 +164,25 @@ export class ProductsService {
     } catch (error) {
       this.logger.error('Error removing product in DB-READ: ', error)
       throw HandledRpcException.rpcException(error.message, error.status)
+    }
+  }
+
+  async findOneAndDeleteCategorieOfProduct(categoryId: number) {
+    try {
+      await this.productModel.findOneAndDelete({
+        categoryId,
+      })
+
+      this.logger.log(
+        'Product deleted for CATEGORIE ID successfully in DB-READ',
+        categoryId,
+      )
+      await this.cacheService.delete(KEY_PRODUCTS_FIND_ALL)
+    } catch (error) {
+      this.logger.log(
+        'Error get product with categorie by ID in DB-READ',
+        error,
+      )
     }
   }
 }
