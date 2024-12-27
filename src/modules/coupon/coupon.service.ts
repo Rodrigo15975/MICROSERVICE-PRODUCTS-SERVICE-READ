@@ -72,6 +72,33 @@ export class CouponService {
     }
   }
 
+  async findOneAndDeleteCouponOfProduct(id: number) {
+    try {
+      console.log({ idProduct: id })
+
+      await this.couponModel
+        .findOneAndDelete(
+          {
+            'products.id': id,
+          },
+          {
+            new: true,
+          },
+        )
+        .exec()
+      await this.cacheService.delete(CACHE_KEY_COUPON_FIND_ALL)
+    } catch (error) {
+      this.logger.error(
+        'Error remove one producto with coupon all coupons from DB-READ: ',
+        error,
+      )
+      throw HandledRpcException.rpcException(
+        'Error remove find one Producto with coupon in DB-READ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
   async remove(id: number) {
     try {
       await this.couponModel.findOneAndDelete({

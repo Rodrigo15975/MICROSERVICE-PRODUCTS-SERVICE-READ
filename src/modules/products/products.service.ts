@@ -149,8 +149,6 @@ export class ProductsService {
 
   async remove(id: number) {
     try {
-      console.log(this.couponService)
-
       await this.productModel.findOneAndDelete(
         {
           id,
@@ -159,6 +157,7 @@ export class ProductsService {
           new: true,
         },
       )
+      await this.couponService.findOneAndDeleteCouponOfProduct(id)
       await this.cacheService.delete(KEY_PRODUCTS_FIND_ALL)
       this.logger.log('Product removed successfully in DB-READ')
     } catch (error) {
