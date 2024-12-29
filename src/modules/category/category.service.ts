@@ -1,4 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common'
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { CreateCategoryDto } from './dto/create-category.dto'
@@ -92,6 +96,7 @@ export class CategoryService {
       await this.cacheService.delete(CATEGORY_CACHE_NAME)
     } catch (error) {
       this.logger.fatal('Failed Updated Category in DB-READ: ', error)
+      throw new InternalServerErrorException(error)
     }
   }
 
@@ -124,6 +129,7 @@ export class CategoryService {
         'Failed Updated DISCOUNT with CATEGORY in DB-READ: ',
         error,
       )
+      throw new InternalServerErrorException(error)
     }
   }
 
@@ -139,6 +145,7 @@ export class CategoryService {
       await this.cacheService.delete(CATEGORY_CACHE_NAME)
     } catch (error) {
       this.logger.fatal('Failed DELETED Category in DB-READ: ', error)
+      throw new InternalServerErrorException(error)
     }
   }
   async removeDiscount(id: number) {
@@ -162,6 +169,7 @@ export class CategoryService {
         'Failed create Discount with Category in DB-READ: ',
         error,
       )
+      throw new InternalServerErrorException(error)
       // this.logger.error(error)
     }
   }
