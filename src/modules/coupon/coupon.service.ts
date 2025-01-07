@@ -50,6 +50,7 @@ export class CouponService {
 
       const findAllCoupons = await this.couponModel
         .find()
+        .lean()
         .sort({
           createdAt: -1,
           updatedAt: -1,
