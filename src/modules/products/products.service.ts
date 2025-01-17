@@ -105,12 +105,29 @@ export class ProductsService {
       this.logger.log('Error get all PRODUCT IN DB-READ', error)
     }
   }
-  /**
-   * @GET_IN_FRONT_CLIENT
-   */
-  // esto ira cuando toca la parte del client E-COMMERCE
+
   async findOne(id: number) {
+    if (!id)
+      return HandledRpcException.rpcException(
+        `Id ${id} not found`,
+        HttpStatus.NOT_FOUND,
+      )
     try {
+      const findAllProductsCache = await this.cacheService.get<
+        CreateProductDto[]
+      >(KEY_PRODUCTS_FIND_ALL)
+
+      if (findAllProductsCache) {
+        const product = findAllProductsCache.find(
+          (product) => product.id === id,
+        )
+        if (!product)
+          return HandledRpcException.rpcException(
+            'Product not found',
+            HttpStatus.NOT_FOUND,
+          )
+        return product
+      }
       const product = await this.productModel
         .findOne({
           id,
@@ -118,13 +135,13 @@ export class ProductsService {
         .select('-_id -__v')
         .exec()
       if (!product)
-        throw HandledRpcException.rpcException(
+        return HandledRpcException.rpcException(
           'Product not found',
           HttpStatus.NOT_FOUND,
         )
       return product
     } catch (error) {
-      this.logger.log('Error get product by ID in DB-READ', error)
+      this.logger.log(`Error get product by ID in DB-READ, ID: ${id} `, error)
       throw HandledRpcException.rpcException(error.message, error.status)
     }
   }
@@ -132,11 +149,11 @@ export class ProductsService {
   async removeUrl(key_url: string) {
     try {
       await this.productModel.findOneAndUpdate(
-        { 'productVariant.key_url': key_url }, // Filtro: busca un documento que tenga un productVariant con el key_url especificado
+        { 'productVariant.key_url': key_url },
         {
-          $pull: { productVariant: { key_url } }, // Elimina el elemento del array que tenga el key_url coincidente
+          $pull: { productVariant: { key_url } },
         },
-        { new: true }, // Devuelve el documento actualizado después de la operación
+        { new: true },
       )
 
       await this.cacheService.delete(KEY_PRODUCTS_FIND_ALL)

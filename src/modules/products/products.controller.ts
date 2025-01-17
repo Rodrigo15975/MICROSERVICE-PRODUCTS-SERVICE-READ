@@ -6,6 +6,7 @@ import {
   PRODUCTS_CREATE_ONE_VARIANT_READ,
   PRODUCTS_CREATE_READ,
   PRODUCTS_GET_ALL_READ,
+  PRODUCTS_GET_ONE,
   PRODUCTS_REMOVE_READ,
   PRODUCTS_REMOVE_SIZE_READ,
   PRODUCTS_REMOVE_URL_READ,
@@ -19,6 +20,7 @@ export class ProductsController {
   create(@Payload() createProductDto: CreateProductDto) {
     return this.productsService.createOrUpdate(createProductDto)
   }
+
   @EventPattern(PRODUCTS_CREATE_ONE_VARIANT_READ)
   createOneVariant(@Payload() createOneVariant: CreateOneVariant) {
     return this.productsService.createOneVariant(createOneVariant)
@@ -29,7 +31,7 @@ export class ProductsController {
     return this.productsService.findAll()
   }
 
-  @MessagePattern('findOneProduct')
+  @MessagePattern(PRODUCTS_GET_ONE)
   findOne(@Payload() id: number) {
     return this.productsService.findOne(id)
   }

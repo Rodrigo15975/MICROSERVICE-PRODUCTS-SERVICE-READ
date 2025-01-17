@@ -11,6 +11,7 @@ export class Category {
     type: String,
     unique: true,
     required: true,
+    lowercase: true,
   })
   category: string
 
@@ -28,7 +29,7 @@ export class Category {
         type: number
         unique: true
         required: true
-        index: true // Aplica el índice aquí
+        index: true
       }
       categoryId: { type: string; required: true }
       discount: { type: number; required: true }
