@@ -6,6 +6,7 @@ import {
   PRODUCTS_CREATE_ONE_VARIANT_READ,
   PRODUCTS_CREATE_READ,
   PRODUCTS_GET_ALL_READ,
+  PRODUCTS_GET_ALL_READ_CLIENT,
   PRODUCTS_GET_ONE,
   PRODUCTS_REMOVE_READ,
   PRODUCTS_REMOVE_SIZE_READ,
@@ -29,6 +30,11 @@ export class ProductsController {
   @MessagePattern(PRODUCTS_GET_ALL_READ)
   findAll() {
     return this.productsService.findAll()
+  }
+
+  @MessagePattern(PRODUCTS_GET_ALL_READ_CLIENT)
+  findAllClient() {
+    return this.productsService.findAllClient()
   }
 
   @MessagePattern(PRODUCTS_GET_ONE)

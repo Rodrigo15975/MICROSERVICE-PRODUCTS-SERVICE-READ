@@ -5,6 +5,8 @@ import {
   ProductVariantDto,
 } from './product.variant.inventory-entity'
 
+class Post {}
+
 @Schema({
   collection: 'products',
   timestamps: true,
@@ -101,6 +103,11 @@ export class Product extends Document {
 
   @Prop({ type: ProductInventoryDto, required: true })
   productInventory: ProductInventoryDto
+
+  @Prop({
+    type: [Post],
+  })
+  post: []
 }
 
 export const SchemaProduct = SchemaFactory.createForClass(Product)

@@ -1,12 +1,20 @@
-import { HttpStatus, Injectable, Logger } from '@nestjs/common'
+import {
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { CacheService } from '../cache/cache.service'
 import { HandledRpcException } from '../common/handler-errors/handle-errorst'
-import { KEY_PRODUCTS_FIND_ALL } from './common/cache-key/key-cache'
+import { CouponService } from '../coupon/coupon.service'
+import {
+  KEY_PRODUCTS_FIND_ALL,
+  KEY_PRODUCTS_FIND_ALL_CLIENT,
+} from './common/cache-key/key-cache'
 import { CreateOneVariant, CreateProductDto } from './dto/create-product.dto'
 import { Product } from './entities/product.entity'
-import { CouponService } from '../coupon/coupon.service'
 
 @Injectable()
 export class ProductsService {
@@ -41,13 +49,13 @@ export class ProductsService {
         },
       )
       this.logger.log('Product created/updated successfully in DB-READ')
-      await this.cacheService.delete(KEY_PRODUCTS_FIND_ALL)
+      await Promise.all([
+        this.cacheService.delete(KEY_PRODUCTS_FIND_ALL),
+        this.cacheService.delete(KEY_PRODUCTS_FIND_ALL_CLIENT),
+      ])
     } catch (error) {
       this.logger.error('Error creating/updated product in DB-READ: ', error)
-      throw HandledRpcException.rpcException(
-        'Error creatings products',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      )
+      throw new InternalServerErrorException(error.message, error.status)
     }
   }
   /**
@@ -68,14 +76,14 @@ export class ProductsService {
           new: true,
         },
       )
-      await this.cacheService.delete(KEY_PRODUCTS_FIND_ALL)
+      await Promise.all([
+        this.cacheService.delete(KEY_PRODUCTS_FIND_ALL),
+        this.cacheService.delete(KEY_PRODUCTS_FIND_ALL_CLIENT),
+      ])
       this.logger.log('One Variant created  successfully in DB-READ')
     } catch (error) {
       this.logger.error('Error creating one Variant product', error)
-      throw HandledRpcException.rpcException(
-        'Error creating one Variant product',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      )
+      throw new InternalServerErrorException(error.message, error.status)
     }
   }
 
@@ -102,7 +110,38 @@ export class ProductsService {
 
       return findAllProducts
     } catch (error) {
-      this.logger.log('Error get all PRODUCT IN DB-READ', error)
+      this.logger.error('Error get all PRODUCT IN DB-READ', error)
+      throw HandledRpcException.rpcException(error.message, error.status)
+    }
+  }
+
+  async findAllClient() {
+    try {
+      const findAllProductsCache = await this.cacheService.get(
+        KEY_PRODUCTS_FIND_ALL_CLIENT,
+      )
+      if (findAllProductsCache) return findAllProductsCache
+
+      const findAllProducts = await this.productModel
+        .find()
+        .sort({
+          createdAt: -1,
+          updatedAt: -1,
+        })
+        .select(
+          '-_id -__v -productInventory -productVariant.createdAt -productVariant.updatedAt -productVariant.productsId -productVariant.updateAt -total_sold -category.createdAt -category.updatedAt -categoryId -updatedAt',
+        )
+        .exec()
+      await this.cacheService.set(
+        KEY_PRODUCTS_FIND_ALL_CLIENT,
+        findAllProducts,
+        '20m',
+      )
+
+      return findAllProducts
+    } catch (error) {
+      this.logger.error('Error get all PRODUCT CLIENT IN DB-READ ', error)
+      return HandledRpcException.rpcException(error.message, error.status)
     }
   }
 
@@ -141,7 +180,7 @@ export class ProductsService {
         )
       return product
     } catch (error) {
-      this.logger.log(`Error get product by ID in DB-READ, ID: ${id} `, error)
+      this.logger.error(`Error get product by ID in DB-READ, ID: ${id} `, error)
       throw HandledRpcException.rpcException(error.message, error.status)
     }
   }
@@ -155,12 +194,14 @@ export class ProductsService {
         },
         { new: true },
       )
-
-      await this.cacheService.delete(KEY_PRODUCTS_FIND_ALL)
+      await Promise.all([
+        this.cacheService.delete(KEY_PRODUCTS_FIND_ALL),
+        this.cacheService.delete(KEY_PRODUCTS_FIND_ALL_CLIENT),
+      ])
       this.logger.log('URL deleted successfully in DB-READ')
     } catch (error) {
-      this.logger.log('Error deleting URL', error)
-      throw HandledRpcException.rpcException(error.message, error.status)
+      this.logger.error('Error deleting URL', error)
+      throw new InternalServerErrorException(error.message, error.status)
     }
   }
 
@@ -175,11 +216,17 @@ export class ProductsService {
         },
       )
       await this.couponService.findOneAndDeleteCouponOfProduct(id)
-      await this.cacheService.delete(KEY_PRODUCTS_FIND_ALL)
+      await Promise.all([
+        this.cacheService.delete(KEY_PRODUCTS_FIND_ALL),
+        this.cacheService.delete(KEY_PRODUCTS_FIND_ALL_CLIENT),
+      ])
       this.logger.log('Product removed successfully in DB-READ')
     } catch (error) {
-      this.logger.error('Error removing product in DB-READ: ', error)
-      throw HandledRpcException.rpcException(error.message, error.status)
+      this.logger.error(
+        `Error removing product in DB-READ: ${error.message} `,
+        error,
+      )
+      throw new InternalServerErrorException(error.message, error.status)
     }
   }
 
@@ -193,12 +240,16 @@ export class ProductsService {
         'Product deleted for CATEGORIE ID successfully in DB-READ',
         categoryId,
       )
-      await this.cacheService.delete(KEY_PRODUCTS_FIND_ALL)
+      await Promise.all([
+        this.cacheService.delete(KEY_PRODUCTS_FIND_ALL),
+        this.cacheService.delete(KEY_PRODUCTS_FIND_ALL_CLIENT),
+      ])
     } catch (error) {
-      this.logger.log(
-        'Error get product with categorie by ID in DB-READ',
+      this.logger.error(
+        `Error get product with categorie by ID in DB-READ: ${error.message} `,
         error,
       )
+      throw new InternalServerErrorException(error.message, error.status)
     }
   }
 }
