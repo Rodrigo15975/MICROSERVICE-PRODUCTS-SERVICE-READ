@@ -23,11 +23,14 @@ export class Post {
   @Prop({
     type: Number,
     index: true,
+    default: 0,
   })
   userId: number
+
   @Prop({
     type: Number,
     index: true,
+    default: 0,
   })
   rating: number
 }

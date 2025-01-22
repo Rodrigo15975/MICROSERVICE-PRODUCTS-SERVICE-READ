@@ -6,6 +6,7 @@ import {
 export const configPublish = {
   ROUTING_EXCHANGE_CREATE_POST: 'client.create.post',
   ROUTING_ROUTINGKEY_CREATE_POST: 'client.create.post',
+  ROUTING_QUEUE_CREATE_POST: 'client.create.post',
 }
 
 export const configQueue: RabbitMQQueueConfig[] = [

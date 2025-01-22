@@ -15,6 +15,9 @@ import {
 } from './common/cache-key/key-cache'
 import { CreateOneVariant, CreateProductDto } from './dto/create-product.dto'
 import { Product } from './entities/product.entity'
+import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq'
+import { configPublish } from './common/config-rabbit'
+import { CreateReview } from './dto/create-new-review'
 
 @Injectable()
 export class ProductsService {
@@ -58,6 +61,46 @@ export class ProductsService {
       throw new InternalServerErrorException(error.message, error.status)
     }
   }
+
+  @RabbitSubscribe({
+    exchange: configPublish.ROUTING_EXCHANGE_CREATE_POST,
+    routingKey: configPublish.ROUTING_ROUTINGKEY_CREATE_POST,
+    queue: configPublish.ROUTING_QUEUE_CREATE_POST,
+  })
+  async createNewReview(data: CreateReview) {
+    const { productId, comments, username, rating } = data
+    try {
+      console.log({
+        data,
+      })
+
+      await this.productModel.findOneAndUpdate(
+        {
+          id: productId,
+        },
+        // modelar bien la schema esta fllando
+        {
+          $push: {
+            post: {
+              comments,
+              username,
+              verified: true,
+              rating,
+              user: 1,
+            },
+          },
+        },
+        { new: true, upsert: true },
+      )
+    } catch (error) {
+      this.logger.error('Error creating createNewReview', error)
+      throw new InternalServerErrorException({
+        message: error.message,
+        status: error.status,
+      })
+    }
+  }
+
   /**
    */
   async createOneVariant(data: CreateOneVariant) {

@@ -18,7 +18,6 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('MICROSERVICE-PRODUCTS-READ', app, documentFactory)
 
-  // Crear el microservicio
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.REDIS,
     options: {

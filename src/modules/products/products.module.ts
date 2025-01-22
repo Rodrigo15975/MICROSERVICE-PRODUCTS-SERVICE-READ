@@ -17,7 +17,7 @@ import { configExchange, configQueue } from './common/config-rabbit'
     CacheModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      cache: false,
+      // cache: true,
       envFilePath: '.env',
     }),
     RabbitMQModule.forRootAsync(RabbitMQModule, {
@@ -25,23 +25,15 @@ import { configExchange, configQueue } from './common/config-rabbit'
         uri: configService.getOrThrow('RABBITMQ_URL'),
         exchanges: configExchange,
         queues: configQueue,
-        // connectionInitOptions: {
-        //   wait: false,
-        // },
-        // channels: {
-        //   default: {
-        //     // El prefetchCount en RabbitMQ controla la cantidad de mensajes que un consumidor puede recibir y procesar simultáneamente antes de enviar un ack (confirmación) de los mensajes procesados. Esto forma parte del mecanismo de QoS (Quality of Service) en RabbitMQ.
-        //     prefetchCount: 10,
-        //   },
-        // },
       }),
+      inject: [ConfigService],
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.getOrThrow<string>('MONGODB_URI'),
       }),
+      inject: [ConfigService],
     }),
     MongooseModule.forFeature([
       {
