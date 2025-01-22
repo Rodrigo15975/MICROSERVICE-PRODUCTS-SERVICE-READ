@@ -4,8 +4,7 @@ import {
   ProductInventoryDto,
   ProductVariantDto,
 } from './product.variant.inventory-entity'
-
-class Post {}
+import { Post } from './product.rating'
 
 @Schema({
   collection: 'products',
@@ -107,7 +106,7 @@ export class Product extends Document {
   @Prop({
     type: [Post],
   })
-  post: []
+  post: Post[]
 }
 
 export const SchemaProduct = SchemaFactory.createForClass(Product)
