@@ -72,7 +72,7 @@ export class ProductsService {
     try {
       const product = await this.productModel.findOne({ id: productId })
 
-      if (!product) throw new Error('Product not found')
+      if (!product) throw new InternalServerErrorException('Product not found')
 
       let totalExistingRatings = 0
       let totalUsers = 0
@@ -117,8 +117,9 @@ export class ProductsService {
         },
         { new: true, upsert: true },
       )
-
-      if (!updatedProduct) throw new Error('Failed to update product')
+      await this.cacheService.delete(KEY_PRODUCTS_FIND_ALL_CLIENT)
+      if (!updatedProduct)
+        throw new InternalServerErrorException('Failed to update product')
     } catch (error) {
       this.logger.error('Error creating createNewReview', error)
       throw new InternalServerErrorException({
