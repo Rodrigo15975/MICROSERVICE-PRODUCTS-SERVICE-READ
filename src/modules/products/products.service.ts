@@ -70,28 +70,55 @@ export class ProductsService {
   async createNewReview(data: CreateReview) {
     const { productId, comments, username, rating } = data
     try {
-      console.log({
-        data,
-      })
+      const product = await this.productModel.findOne({ id: productId })
 
-      await this.productModel.findOneAndUpdate(
+      if (!product) throw new Error('Product not found')
+
+      let totalExistingRatings = 0
+      let totalUsers = 0
+
+      if (product.post.length > 0) {
+        totalExistingRatings = product.post.reduce(
+          (sum, review) => sum + review.countRating.rating,
+          0,
+        )
+        totalUsers = product.post.reduce(
+          (sum, review) => sum + review.countUserId.userId,
+          0,
+        )
+      }
+
+      const newTotalRating = Number(
+        ((totalExistingRatings + rating) / (totalUsers + 1)).toFixed(1),
+      )
+
+      const updatedProduct = await this.productModel.findOneAndUpdate(
+        { id: productId },
         {
-          id: productId,
-        },
-        // modelar bien la schema esta fllando
-        {
+          $inc: {
+            'countRating.rating': rating,
+            'countUserId.userId': 1,
+          },
+
+          $set: {
+            'totalRating.totalRating': newTotalRating,
+          },
+
           $push: {
             post: {
               comments,
               username,
               verified: true,
-              rating,
-              user: 1,
+              countRating: { rating },
+              countUserId: { userId: 1 },
+              totalRating: { totalRating: newTotalRating },
             },
           },
         },
         { new: true, upsert: true },
       )
+
+      if (!updatedProduct) throw new Error('Failed to update product')
     } catch (error) {
       this.logger.error('Error creating createNewReview', error)
       throw new InternalServerErrorException({
