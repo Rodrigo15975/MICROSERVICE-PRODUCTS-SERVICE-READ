@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
@@ -59,73 +60,6 @@ export class ProductsService {
     } catch (error) {
       this.logger.error('Error creating/updated product in DB-READ: ', error)
       throw new InternalServerErrorException(error.message, error.status)
-    }
-  }
-
-  @RabbitSubscribe({
-    exchange: configPublish.ROUTING_EXCHANGE_CREATE_POST,
-    routingKey: configPublish.ROUTING_ROUTINGKEY_CREATE_POST,
-    queue: configPublish.ROUTING_QUEUE_CREATE_POST,
-  })
-  async createNewReview(data: CreateReview) {
-    const { productId, comments, username, rating } = data
-    try {
-      const product = await this.productModel.findOne({ id: productId })
-
-      if (!product) throw new InternalServerErrorException('Product not found')
-
-      let totalExistingRatings = 0
-      let totalUsers = 0
-
-      if (product.post.length > 0) {
-        totalExistingRatings = product.post.reduce(
-          (sum, review) => sum + review.countRating.rating,
-          0,
-        )
-        totalUsers = product.post.reduce(
-          (sum, review) => sum + review.countUserId.userId,
-          0,
-        )
-      }
-
-      const newTotalRating = Number(
-        ((totalExistingRatings + rating) / (totalUsers + 1)).toFixed(1),
-      )
-
-      const updatedProduct = await this.productModel.findOneAndUpdate(
-        { id: productId },
-        {
-          $inc: {
-            'countRating.rating': rating,
-            'countUserId.userId': 1,
-          },
-
-          $set: {
-            'totalRating.totalRating': newTotalRating,
-          },
-
-          $push: {
-            post: {
-              comments,
-              username,
-              verified: true,
-              countRating: { rating },
-              countUserId: { userId: 1 },
-              totalRating: { totalRating: newTotalRating },
-            },
-          },
-        },
-        { new: true, upsert: true },
-      )
-      await this.cacheService.delete(KEY_PRODUCTS_FIND_ALL_CLIENT)
-      if (!updatedProduct)
-        throw new InternalServerErrorException('Failed to update product')
-    } catch (error) {
-      this.logger.error('Error creating createNewReview', error)
-      throw new InternalServerErrorException({
-        message: error.message,
-        status: error.status,
-      })
     }
   }
 
@@ -321,6 +255,76 @@ export class ProductsService {
         error,
       )
       throw new InternalServerErrorException(error.message, error.status)
+    }
+  }
+
+  @RabbitSubscribe({
+    exchange: configPublish.ROUTING_EXCHANGE_CREATE_POST,
+    routingKey: configPublish.ROUTING_ROUTINGKEY_CREATE_POST,
+    queue: configPublish.ROUTING_QUEUE_CREATE_POST,
+  })
+  async createNewReview(data: CreateReview) {
+    try {
+      const { productId, comments, username, rating } = data
+      const product = await this.productModel.findOne({ id: productId })
+      if (!product)
+        throw new NotFoundException({
+          message: 'Product not found',
+          status: HttpStatus.NOT_FOUND,
+        })
+
+      let totalExistingRatings = 0
+      let totalUsers = 0
+
+      if (product.post.length > 0) {
+        totalExistingRatings = product.post.reduce(
+          (sum, review) => sum + review.countRating.rating,
+          0,
+        )
+        totalUsers = product.post.reduce(
+          (sum, review) => sum + review.countUserId.userId,
+          0,
+        )
+      }
+
+      const newTotalRating = Number(
+        ((totalExistingRatings + rating) / (totalUsers + 1)).toFixed(1),
+      )
+
+      const updatedProduct = await this.productModel.findOneAndUpdate(
+        { id: productId },
+        {
+          $inc: {
+            'countRating.rating': rating,
+            'countUserId.userId': 1,
+          },
+
+          $set: {
+            'totalRating.totalRating': newTotalRating,
+          },
+
+          $push: {
+            post: {
+              comments,
+              username,
+              verified: true,
+              countRating: { rating },
+              countUserId: { userId: 1 },
+              totalRating: { totalRating: newTotalRating },
+            },
+          },
+        },
+        { new: true, upsert: true },
+      )
+      await this.cacheService.delete(KEY_PRODUCTS_FIND_ALL_CLIENT)
+      if (!updatedProduct)
+        throw new InternalServerErrorException('Failed to update product')
+    } catch (error) {
+      this.logger.error('Error creating createNewReview', error)
+      throw new InternalServerErrorException({
+        message: error.message,
+        status: error.status,
+      })
     }
   }
 }
