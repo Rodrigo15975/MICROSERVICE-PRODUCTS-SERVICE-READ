@@ -75,8 +75,6 @@ export class CouponService {
 
   async findOneAndDeleteCouponOfProduct(id: number) {
     try {
-      console.log({ idProduct: id })
-
       await this.couponModel
         .findOneAndDelete(
           {
