@@ -134,7 +134,7 @@ export class ProductsService {
           updatedAt: -1,
         })
         .select(
-          '-_id -__v -productInventory -productVariant.createdAt -productVariant.updatedAt -productVariant.productsId -productVariant.updateAt -category.createdAt -category.updatedAt -categoryId -updatedAt',
+          '-_id -__v -productVariant.createdAt -productVariant.updatedAt -productVariant.productsId -productVariant.updateAt -category.createdAt -category.updatedAt -categoryId -updatedAt',
         )
         .exec()
       await this.cacheService.set(
