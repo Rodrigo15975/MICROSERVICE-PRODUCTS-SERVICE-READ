@@ -17,7 +17,6 @@ import { configExchange, configQueue } from './common/config-rabbit'
     CacheModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      // cache: true,
       envFilePath: '.env',
     }),
     RabbitMQModule.forRootAsync(RabbitMQModule, {
