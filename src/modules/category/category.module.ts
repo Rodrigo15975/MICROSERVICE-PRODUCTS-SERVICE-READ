@@ -10,11 +10,18 @@ import { ProductsService } from '../products/products.service'
 import { CouponService } from '../coupon/coupon.service'
 import { CouponModule } from '../coupon/coupon.module'
 import { Coupon, SchemaCoupon } from '../coupon/entities/coupon.entity'
+import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq'
 
 @Module({
   imports: [
     CouponModule,
     CacheModule,
+    RabbitMQModule.forRootAsync(RabbitMQModule, {
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.getOrThrow('RABBITMQ_URL'),
+      }),
+      inject: [ConfigService],
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       cache: false,

@@ -16,7 +16,7 @@ import {
 } from './common/cache-key/key-cache'
 import { CreateOneVariant, CreateProductDto } from './dto/create-product.dto'
 import { Product } from './entities/product.entity'
-import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq'
+import { AmqpConnection, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq'
 import { configPublish } from './common/config-rabbit'
 import { CreateReview } from './dto/create-new-review'
 
@@ -27,6 +27,7 @@ export class ProductsService {
     @InjectModel(Product.name) private readonly productModel: Model<Product>,
     private readonly cacheService: CacheService,
     private readonly couponService: CouponService,
+    private readonly amqConnection: AmqpConnection,
   ) {}
   /**
    * Notification the product has been updated or created
@@ -117,6 +118,20 @@ export class ProductsService {
     } catch (error) {
       this.logger.error('Error get all PRODUCT IN DB-READ', error)
       throw HandledRpcException.rpcException(error.message, error.status)
+    }
+  }
+
+  async getAllDataProductsForOrders() {
+    try {
+      const findAllProducts = await this.findAllClient()
+      this.amqConnection.publish(
+        configPublish.ROUTING_EXCHANGE_SEND_DATA_ORDERS,
+        configPublish.ROUTING_ROUTINGKEY_SEND_DATA_ORDERS,
+        findAllProducts,
+      )
+    } catch (error) {
+      this.logger.error('Error get all PRODUCT IN DB-READ', error)
+      return HandledRpcException.rpcException(error.message, error.status)
     }
   }
 
