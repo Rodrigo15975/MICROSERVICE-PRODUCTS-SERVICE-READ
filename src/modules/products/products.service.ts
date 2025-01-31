@@ -1,3 +1,4 @@
+import { RabbitRPC, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq'
 import {
   HttpStatus,
   Injectable,
@@ -14,11 +15,10 @@ import {
   KEY_PRODUCTS_FIND_ALL,
   KEY_PRODUCTS_FIND_ALL_CLIENT,
 } from './common/cache-key/key-cache'
-import { CreateOneVariant, CreateProductDto } from './dto/create-product.dto'
-import { Product } from './entities/product.entity'
-import { AmqpConnection, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq'
 import { configPublish } from './common/config-rabbit'
 import { CreateReview } from './dto/create-new-review'
+import { CreateOneVariant, CreateProductDto } from './dto/create-product.dto'
+import { Product } from './entities/product.entity'
 
 @Injectable()
 export class ProductsService {
@@ -27,7 +27,6 @@ export class ProductsService {
     @InjectModel(Product.name) private readonly productModel: Model<Product>,
     private readonly cacheService: CacheService,
     private readonly couponService: CouponService,
-    private readonly amqConnection: AmqpConnection,
   ) {}
   /**
    * Notification the product has been updated or created
@@ -121,21 +120,21 @@ export class ProductsService {
     }
   }
 
+  @RabbitRPC({
+    exchange: configPublish.ROUTING_EXCHANGE_SEND_DATA_ORDERS,
+    routingKey: configPublish.ROUTING_ROUTINGKEY_SEND_DATA_ORDERS,
+    queue: configPublish.ROUTING_QUEUE_SEND_DATA_ORDERS,
+  })
   async getAllDataProductsForOrders() {
     try {
-      const findAllProducts = await this.findAllClient()
-      this.amqConnection.publish(
-        configPublish.ROUTING_EXCHANGE_SEND_DATA_ORDERS,
-        configPublish.ROUTING_ROUTINGKEY_SEND_DATA_ORDERS,
-        findAllProducts,
-      )
+      return await this.findAllClient(false)
     } catch (error) {
       this.logger.error('Error get all PRODUCT IN DB-READ', error)
       return HandledRpcException.rpcException(error.message, error.status)
     }
   }
 
-  async findAllClient() {
+  async findAllClient(postInclude: boolean = false) {
     try {
       const findAllProductsCache = await this.cacheService.get(
         KEY_PRODUCTS_FIND_ALL_CLIENT,
@@ -149,7 +148,7 @@ export class ProductsService {
           updatedAt: -1,
         })
         .select(
-          '-_id -__v -productVariant.createdAt -productVariant.updatedAt -productVariant.productsId -productVariant.updateAt -category.createdAt -category.updatedAt -categoryId -updatedAt',
+          `-_id -__v -productVariant.createdAt -productVariant.updatedAt -productVariant.productsId -productVariant.updateAt  ${postInclude ? '' : '-post'}   -category.createdAt -category.updatedAt -categoryId -updatedAt`,
         )
         .exec()
       await this.cacheService.set(
