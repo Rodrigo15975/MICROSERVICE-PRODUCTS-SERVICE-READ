@@ -1,4 +1,4 @@
-import { RabbitRPC, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq'
+import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq'
 import {
   HttpStatus,
   Injectable,
@@ -120,21 +120,7 @@ export class ProductsService {
     }
   }
 
-  @RabbitRPC({
-    exchange: configPublish.ROUTING_EXCHANGE_SEND_DATA_ORDERS,
-    routingKey: configPublish.ROUTING_ROUTINGKEY_SEND_DATA_ORDERS,
-    queue: configPublish.ROUTING_QUEUE_SEND_DATA_ORDERS,
-  })
-  async getAllDataProductsForOrders() {
-    try {
-      return await this.findAllClient(false)
-    } catch (error) {
-      this.logger.error('Error get all PRODUCT IN DB-READ', error)
-      return HandledRpcException.rpcException(error.message, error.status)
-    }
-  }
-
-  async findAllClient(postInclude: boolean = false) {
+  async findAllClient() {
     try {
       const findAllProductsCache = await this.cacheService.get(
         KEY_PRODUCTS_FIND_ALL_CLIENT,
@@ -148,7 +134,7 @@ export class ProductsService {
           updatedAt: -1,
         })
         .select(
-          `-_id -__v -productVariant.createdAt -productVariant.updatedAt -productVariant.productsId -productVariant.updateAt  ${postInclude ? '' : '-post'}   -category.createdAt -category.updatedAt -categoryId -updatedAt`,
+          `-_id -__v -productVariant.createdAt -productVariant.updatedAt -productVariant.productsId -productVariant.updateAt -category.createdAt -category.updatedAt -categoryId -updatedAt`,
         )
         .exec()
       await this.cacheService.set(
