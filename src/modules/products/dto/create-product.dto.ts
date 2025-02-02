@@ -33,7 +33,10 @@ export class CreateProductDto {
 
   quantity: number
 
-  total_sold: number
+  total_sold: {
+    total_sold: number
+    id: number
+  }
 
   is_new: boolean
 

@@ -37,15 +37,15 @@ export class ProductsService {
    */
 
   async createOrUpdate(data: CreateProductDto) {
-    const { id } = data
-
     try {
+      const { id } = data
+      const { total_sold } = data.total_sold
       await this.productModel.findOneAndUpdate(
         {
           id,
         },
         {
-          $set: data,
+          $set: { ...data, total_sold },
         },
         {
           upsert: true,
