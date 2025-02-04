@@ -28,9 +28,9 @@ export class CategoryService {
     const { id } = data
     try {
       const result = await this.schemaModel.findOneAndUpdate(
-        { id }, // Busca por ID o cualquier otro criterio único
-        { $set: data }, // Los campos que deseas actualizar o establecer
-        { upsert: true, new: true }, // `upsert: true` para crear si no existe, `new: true` para devolver el documento actualizado
+        { id },
+        { $set: data },
+        { upsert: true, new: true },
       )
       this.logger.log(
         `CATEGORY CREATED/UPDATED successfully in DB-READ with data: ${JSON.stringify(result)}`,
@@ -109,12 +109,10 @@ export class CategoryService {
     const { id } = data
     try {
       await this.schemaModel.updateOne(
-        // busco el doc en el discountRules que conincida con el id
         {
           'discountRules.id': id,
         },
         {
-          // actualizo el doc con los datos
           $set: {
             'discountRules.$': data,
           },
@@ -170,7 +168,6 @@ export class CategoryService {
         error,
       )
       throw new InternalServerErrorException(error)
-      // this.logger.error(error)
     }
   }
 }
