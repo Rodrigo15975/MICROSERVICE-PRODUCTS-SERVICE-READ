@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm i
 COPY . .
-EXPOSE 4000
+EXPOSE 4005
 
 
 RUN npm run build
