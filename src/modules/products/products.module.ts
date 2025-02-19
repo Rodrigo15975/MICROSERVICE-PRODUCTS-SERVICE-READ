@@ -22,6 +22,14 @@ import { configExchange, configQueue } from './common/config-rabbit'
     RabbitMQModule.forRootAsync(RabbitMQModule, {
       useFactory: (configService: ConfigService) => ({
         uri: configService.getOrThrow('RABBITMQ_URL'),
+        connectionInitOptions: {
+          timeout: 25000,
+          wait: true,
+        },
+
+        connectionManagerOptions: {
+          reconnectTimeInSeconds: 2,
+        },
         exchanges: configExchange,
         queues: configQueue,
       }),
